@@ -7,10 +7,10 @@ import { ToastService } from '../services/toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="pointer-events-none fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+    <div class="pointer-events-none fixed inset-x-4 bottom-4 z-[100] flex flex-col gap-2 sm:right-4 sm:left-auto">
       @for (toast of toastService.toasts(); track toast.id) {
         <div
-          class="pointer-events-auto flex min-w-[280px] max-w-sm items-start gap-3 rounded-lg border px-4 py-3 shadow-xl backdrop-blur transition-all duration-300 animate-[slideIn_0.3s_ease-out]"
+          class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border px-4 py-3 shadow-xl backdrop-blur transition-all duration-300 animate-[slideIn_0.3s_ease-out] sm:min-w-[280px]"
           [class.border-emerald-500/30]="toast.type === 'success'"
           [class.bg-emerald-950/90]="toast.type === 'success'"
           [class.border-red-500/30]="toast.type === 'error'"

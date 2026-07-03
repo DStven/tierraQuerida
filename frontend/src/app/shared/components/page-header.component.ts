@@ -45,7 +45,7 @@ export interface BreadcrumbItem {
             </p>
           }
         </div>
-        <div class="flex shrink-0 items-center gap-2">
+        <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           <ng-content select="[actions]" />
         </div>
       </div>

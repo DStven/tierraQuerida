@@ -192,12 +192,12 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
             (click)="$event.stopPropagation()"
             class="modal-content max-w-xl"
           >
-            <div class="mb-5 flex items-start justify-between gap-3">
+            <div class="modal-header">
               <div>
-                <h3 class="text-lg font-semibold text-white">
+                <h3 class="modal-title">
                   {{ editingId() ? 'Editar proveedor' : 'Nuevo proveedor' }}
                 </h3>
-                <p class="mt-1 text-sm text-zinc-500">Complete la información del proveedor</p>
+                <p class="modal-subtitle">Complete la información del proveedor</p>
               </div>
               <button type="button" (click)="closeModal()" class="modal-close" aria-label="Cerrar modal">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -272,11 +272,11 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
       @if (detailProveedor(); as p) {
         <div class="modal-overlay" (click)="closeDetail()">
           <div class="modal-content max-w-lg" (click)="$event.stopPropagation()">
-            <div class="mb-5 flex items-start gap-4">
+            <div class="modal-header">
               <div class="avatar avatar-md avatar-amber">{{ getInitials(p.razon_social) }}</div>
               <div class="flex-1">
-                <h3 class="text-lg font-semibold text-white">{{ p.razon_social }}</h3>
-                <p class="text-sm text-zinc-500">NIT: {{ p.nit }}</p>
+                <h3 class="modal-title">{{ p.razon_social }}</h3>
+                <p class="modal-subtitle">NIT: {{ p.nit }}</p>
                 <span class="badge badge-success mt-2">Activo</span>
               </div>
               <button type="button" (click)="closeDetail()" class="modal-close" aria-label="Cerrar modal detalle">

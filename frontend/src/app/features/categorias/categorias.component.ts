@@ -82,7 +82,7 @@ import { buildPagination, paginate } from '../../shared/utils/pagination.util';
                     <td class="px-4 py-3 text-zinc-400">{{ categoria.id_categoria }}</td>
                     <td class="px-4 py-3 font-medium text-zinc-100">{{ categoria.nombre_categoria }}</td>
                     <td class="px-4 py-3">
-                      <div class="flex gap-2">
+                      <div class="flex flex-wrap gap-2">
                         <button type="button" (click)="openEdit(categoria)" class="btn-ghost">Editar</button>
                         <button type="button" (click)="remove(categoria)" class="btn-danger">Eliminar</button>
                       </div>

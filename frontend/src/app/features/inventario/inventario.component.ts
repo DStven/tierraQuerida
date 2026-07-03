@@ -115,7 +115,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                     </td>
                     @if (auth.isAdmin()) {
                       <td class="px-4 py-3">
-                        <div class="flex gap-2">
+                        <div class="flex flex-wrap gap-2">
                           <button type="button" (click)="openEdit(item)" class="btn-ghost">Editar</button>
                           <button type="button" (click)="remove(item)" class="btn-danger">Eliminar</button>
                         </div>

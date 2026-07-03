@@ -143,6 +143,14 @@ table {
   transform: translateY(-1px);
 }
 
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-danger:focus-visible,
+.btn-ghost:focus-visible {
+  outline: 2px solid rgba(245, 158, 11, 0.45);
+  outline-offset: 2px;
+}
+
 .btn-primary:disabled,
 .btn-secondary:disabled,
 .btn-danger:disabled,
@@ -171,7 +179,7 @@ table {
   transition: all 0.2s ease;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
   color: white;
@@ -191,7 +199,7 @@ table {
   transition: all 0.2s ease;
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(248, 113, 113, 0.5);
 }
@@ -219,7 +227,7 @@ table {
   flex-shrink: 0;
 }
 
-.btn-ghost:hover {
+.btn-ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.05);
   color: white;
 }
@@ -470,6 +478,20 @@ select.form-input {
   gap: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary,
+  .modal-footer .btn-danger,
+  .modal-footer .btn-ghost {
+    width: 100%;
+  }
 }
 
 .table-modern thead {
