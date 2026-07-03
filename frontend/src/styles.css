@@ -410,32 +410,66 @@ select.form-input {
 
 .table-modern th {
   font-size: 0.75rem;
+  line-height: 1rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: rgb(161, 161, 170);
+  text-align: left;
+  vertical-align: middle;
 }
 
 .table-modern tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  transition: background 0.15s ease;
+  transition: background 0.2s ease;
 }
 
 .table-modern tbody tr:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.055);
 }
 
 .table-modern tbody td {
   vertical-align: middle;
+  line-height: 1.35;
 }
 
 .table-modern td,
 .table-modern th {
-  padding: 0.85rem 1rem;
+  padding: 0.8rem 1rem;
 }
 
 .table-modern td {
   font-size: 0.875rem;
+}
+
+.table-modern td[colspan] {
+  padding-top: 2.25rem;
+  padding-bottom: 2.25rem;
+  text-align: center;
+}
+
+.table-modern .badge {
+  min-height: 1.5rem;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+}
+
+.table-modern .btn-ghost,
+.table-modern .btn-danger,
+.table-modern .btn-secondary,
+.table-modern .btn-primary {
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  gap: 0.35rem;
+}
+
+.table-modern .btn-ghost svg,
+.table-modern .btn-danger svg,
+.table-modern .btn-secondary svg,
+.table-modern .btn-primary svg {
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 .table-sortable {
