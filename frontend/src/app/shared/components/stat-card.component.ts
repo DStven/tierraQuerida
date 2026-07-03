@@ -9,7 +9,7 @@ import { AppIconComponent } from './app-icon.component';
   imports: [RouterLink, AppIconComponent, AnimatedCounterComponent],
   template: `
     <article
-      class="stat-card group relative overflow-hidden p-5"
+      class="stat-card group relative overflow-hidden p-4 sm:p-5"
       [style.animation-delay]="delay()"
     >
       <div
@@ -24,7 +24,7 @@ import { AppIconComponent } from './app-icon.component';
           @if (loading()) {
             <div class="mt-3 h-9 w-20 animate-pulse rounded-md bg-white/[0.06]"></div>
           } @else {
-            <p class="mt-2 text-3xl font-semibold tracking-tight text-white">
+            <p class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
               <app-animated-counter [value]="value()" [animate]="!loading()" />
             </p>
           }
@@ -43,7 +43,7 @@ import { AppIconComponent } from './app-icon.component';
         </div>
 
         <div class="icon-badge shrink-0">
-          <app-icon [icon]="icon()" [size]="28" color="#F59E0B" />
+          <app-icon [icon]="icon()" [size]="24" color="#F59E0B" />
         </div>
       </div>
 

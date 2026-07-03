@@ -133,12 +133,12 @@ import { buildPagination, paginate } from '../../shared/utils/pagination.util';
             <div class="card-header">
               <h3 class="font-semibold text-white">Historial</h3>
               <div class="flex flex-wrap gap-2">
-                <div class="min-w-[140px] relative">
-                <input type="search" [value]="search()" (input)="onSearch($event)" placeholder="Buscar..." class="form-input w-full pl-10" />
-                <svg class="absolute left-3 top-3.5 h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              </div>
+                <div class="search-box min-w-[140px]">
+                  <input type="search" [value]="search()" (input)="onSearch($event)" placeholder="Buscar..." class="form-input search-input w-full" />
+                  <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
                 <select [value]="tipoFilter()" (change)="onTipoFilter($event)" class="form-input w-auto">
                   <option value="">Todos</option>
                   <option value="Entrada">Entradas</option>

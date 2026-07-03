@@ -48,15 +48,15 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
       </app-page-header>
 
       <div class="flex flex-wrap gap-3">
-        <div class="max-w-md w-full relative">
+        <div class="search-box max-w-md w-full">
           <input 
             type="search" 
             [value]="search()" 
             (input)="onSearch($event)" 
             placeholder="Buscar producto..." 
-            class="form-input w-full pl-10" 
+            class="form-input search-input w-full"
           />
-          <svg class="absolute left-3 top-3.5 h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>

@@ -44,15 +44,15 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
 
       <div class="card overflow-hidden">
         <div class="card-header">
-          <div class="flex-1 min-w-[200px] max-w-md relative">
+          <div class="search-box flex-1 min-w-[200px] max-w-md">
             <input
               type="search"
               [value]="search()"
               (input)="onSearch($event)"
               placeholder="Buscar por nombre, ciudad o departamento..."
-              class="form-input w-full pl-10"
+              class="form-input search-input w-full"
             />
-            <svg class="absolute left-3 top-3.5 h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
