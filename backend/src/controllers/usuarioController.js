@@ -5,6 +5,9 @@ const asyncHandler = require('../utils/asyncHandler');
 const { success, error } = require('../utils/apiResponse');
 const auditLogger = require('../utils/auditLogger');
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const allowedRoleNames = ['administrador', 'empleado'];
+
 // Lista todos los usuarios.
 const getAll = asyncHandler(async (_req, res) => {
   const usuarios = await usuarioModel.findAll();
@@ -38,10 +41,22 @@ const create = asyncHandler(async (req, res) => {
     return error(res, 400, 'identificacion, nombre, email, clave e id_rol son obligatorios');
   }
 
+  if (!emailRegex.test(String(email).trim())) {
+    return error(res, 400, 'email invalido');
+  }
+
+  if (String(clave).length < 8) {
+    return error(res, 400, 'clave debe tener minimo 8 caracteres');
+  }
+
   // Verifica que el rol exista antes de crear el usuario.
   const rol = await rolModel.findById(id_rol);
   if (!rol) {
     return error(res, 400, 'id_rol invalido');
+  }
+
+  if (!allowedRoleNames.includes(String(rol.nombre_rol).toLowerCase())) {
+    return error(res, 400, 'Solo se permite asignar roles Administrador o Empleado');
   }
 
   const existingUser = await usuarioModel.findByEmail(email);
@@ -81,6 +96,10 @@ const update = asyncHandler(async (req, res) => {
   delete data.id_usuario;
 
   if (data.email) {
+    if (!emailRegex.test(String(data.email).trim())) {
+      return error(res, 400, 'email invalido');
+    }
+
     const existingUser = await usuarioModel.findByEmail(data.email);
 
     if (existingUser && Number(existingUser.id_usuario) !== Number(req.params.id)) {
@@ -89,6 +108,10 @@ const update = asyncHandler(async (req, res) => {
   }
 
   if (data.clave) {
+    if (String(data.clave).length < 8) {
+      return error(res, 400, 'clave debe tener minimo 8 caracteres');
+    }
+
     data.clave = await bcrypt.hash(
       data.clave,
       Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
@@ -100,6 +123,10 @@ const update = asyncHandler(async (req, res) => {
     const newRol = await rolModel.findById(data.id_rol);
     if (!newRol) {
       return error(res, 400, 'id_rol invalido');
+    }
+
+    if (!allowedRoleNames.includes(String(newRol.nombre_rol).toLowerCase())) {
+      return error(res, 400, 'Solo se permite asignar roles Administrador o Empleado');
     }
   }
 

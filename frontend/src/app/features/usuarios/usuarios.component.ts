@@ -16,7 +16,10 @@ import { filterBySearch } from '../../shared/utils/filter.util';
 import { debounce } from '../../shared/utils/debounce.util';
 import { isFieldInvalid } from '../../shared/utils/form.util';
 import { buildPagination, paginate } from '../../shared/utils/pagination.util';
+import { SortDirection, sortItems, toggleSort } from '../../shared/utils/sort.util';
 import { getInitials } from '../../shared/utils/string.util';
+
+type SortField = 'identificacion' | 'nombre' | 'email' | 'estado' | 'id_rol';
 
 @Component({
   selector: 'app-usuarios',
@@ -66,11 +69,11 @@ import { getInitials } from '../../shared/utils/string.util';
               <thead>
                 <tr class="border-b border-white/[0.06]">
                   <th class="px-4 py-3 font-medium">Usuario</th>
-                  <th class="px-4 py-3 font-medium">Identificación</th>
-                  <th class="px-4 py-3 font-medium">Email</th>
+                  <th class="table-sortable px-4 py-3 font-medium" (click)="setSort('identificacion')">Identificación {{ sortIcon('identificacion') }}</th>
+                  <th class="table-sortable px-4 py-3 font-medium" (click)="setSort('email')">Email {{ sortIcon('email') }}</th>
                   <th class="px-4 py-3 font-medium">Teléfono</th>
-                  <th class="px-4 py-3 font-medium">Estado</th>
-                  <th class="px-4 py-3 font-medium">Rol</th>
+                  <th class="table-sortable px-4 py-3 font-medium" (click)="setSort('estado')">Estado {{ sortIcon('estado') }}</th>
+                  <th class="table-sortable px-4 py-3 font-medium" (click)="setSort('id_rol')">Rol {{ sortIcon('id_rol') }}</th>
                   <th class="px-4 py-3 font-medium">Acciones</th>
                 </tr>
               </thead>
@@ -138,7 +141,17 @@ import { getInitials } from '../../shared/utils/string.util';
               <label class="form-label sm:col-span-2">
                 Clave @if (!editingId()) { <span class="required-mark">*</span> } @else { <span class="text-zinc-500">(opcional)</span> }
                 <input type="password" formControlName="clave" class="form-input mt-1.5" [class.is-invalid]="invalid('clave')" />
-                @if (invalid('clave')) { <span class="form-error">La clave es obligatoria</span> }
+                @if (invalid('clave')) {
+                  <span class="form-error">
+                    @if (form.controls.clave.errors?.['required']) {
+                      La clave es obligatoria
+                    } @else if (form.controls.clave.errors?.['minlength']) {
+                      La clave debe tener mínimo 8 caracteres
+                    } @else {
+                      La clave no es válida
+                    }
+                  </span>
+                }
               </label>
               <label class="form-label">
                 Teléfono
@@ -196,8 +209,20 @@ export class UsuariosComponent {
   readonly editingId = signal<number | null>(null);
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);
+  readonly sortField = signal<SortField>('nombre');
+  readonly sortDirection = signal<SortDirection>('asc');
 
-  readonly filtered = computed(() => filterBySearch(this.usuarios(), this.search(), ['identificacion', 'nombre', 'email']));
+  readonly filtered = computed(() => {
+    const base = this.usuarios().map((usuario) => ({
+      ...usuario,
+      estado_label: this.formatEstado(usuario.estado),
+      rol_label: this.roleName(usuario.id_rol),
+    }));
+
+    let items = filterBySearch(base, this.search(), ['identificacion', 'nombre', 'email', 'estado_label', 'rol_label']);
+    items = sortItems(items, this.sortField(), this.sortDirection());
+    return items;
+  });
   readonly pagination = computed(() => buildPagination(this.filtered().length, this.page(), this.pageSize));
   readonly pageItems = computed(() => paginate(this.filtered(), this.pagination().page, this.pageSize));
 
@@ -205,10 +230,10 @@ export class UsuariosComponent {
     identificacion: ['', Validators.required],
     nombre: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    clave: [''],
+    clave: ['', [Validators.minLength(8)]],
     telefono: [''],
     estado: ['Activo' as EstadoUsuario, Validators.required],
-    id_rol: [0, Validators.required],
+    id_rol: [0, [Validators.required, Validators.min(1)]],
   });
 
   constructor() {
@@ -245,10 +270,24 @@ export class UsuariosComponent {
     this.page.set(page);
   }
 
+  setSort(field: SortField): void {
+    const next = toggleSort(this.sortField(), this.sortDirection(), field);
+    this.sortField.set(next.field as SortField);
+    this.sortDirection.set(next.direction);
+    this.page.set(1);
+  }
+
+  sortIcon(field: SortField): string {
+    if (this.sortField() !== field) {
+      return '↕';
+    }
+    return this.sortDirection() === 'asc' ? '↑' : '↓';
+  }
+
   openCreate(): void {
     this.editingId.set(null);
     this.form.reset({ identificacion: '', nombre: '', email: '', clave: '', telefono: '', estado: 'Activo', id_rol: this.roles()[0]?.id_rol ?? 0 });
-    this.form.controls.clave.setValidators([Validators.required]);
+    this.form.controls.clave.setValidators([Validators.required, Validators.minLength(8)]);
     this.form.controls.clave.updateValueAndValidity();
     this.formError.set(null);
     this.modalOpen.set(true);
