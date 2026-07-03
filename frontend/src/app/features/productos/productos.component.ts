@@ -12,7 +12,6 @@ import { SkeletonTableComponent } from '../../shared/components/skeleton-table.c
 import { SpinnerComponent } from '../../shared/components/spinner.component';
 import { ConfirmService } from '../../shared/services/confirm.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { filterBySearch } from '../../shared/utils/filter.util';
 import { debounce } from '../../shared/utils/debounce.util';
 import { isFieldInvalid } from '../../shared/utils/form.util';
 import { buildPagination, paginate } from '../../shared/utils/pagination.util';
@@ -133,9 +132,12 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                   formControlName="precio_unitario" 
                   class="form-input mt-1.5" 
                   [class.is-invalid]="invalid('precio_unitario')"
+                  (focus)="onPrecioFocus()"
+                  (blur)="onPrecioBlur()"
                   inputmode="decimal"
                   placeholder="0"
                 />
+                @if (invalid('precio_unitario')) { <span class="form-error">Ingrese un precio valido</span> }
               </label>
               <label class="form-label">
                 Categoría<span class="required-mark">*</span>
@@ -184,15 +186,35 @@ export class ProductosComponent {
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);
 
-  readonly filtered = computed(() => filterBySearch(this.productos(), this.search(), ['nombre', 'descripcion']));
+  readonly filtered = computed(() => {
+    const term = this.search().trim().toLowerCase();
+    if (!term) {
+      return this.productos();
+    }
+
+    const categoriasById = new Map(
+      this.categorias().map((categoria) => [categoria.id_categoria, categoria.nombre_categoria.toLowerCase()]),
+    );
+
+    return this.productos().filter((producto) => {
+      const categoriaNombre = categoriasById.get(Number(producto.id_categoria)) ?? '';
+      return (
+        String(producto.nombre ?? '').toLowerCase().includes(term) ||
+        String(producto.descripcion ?? '').toLowerCase().includes(term) ||
+        String(producto.id_producto ?? '').toLowerCase().includes(term) ||
+        String(producto.precio_unitario ?? '').toLowerCase().includes(term) ||
+        categoriaNombre.includes(term)
+      );
+    });
+  });
   readonly pagination = computed(() => buildPagination(this.filtered().length, this.page(), this.pageSize));
   readonly pageItems = computed(() => paginate(this.filtered(), this.pagination().page, this.pageSize));
 
   readonly form = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
     descripcion: [''],
-    precio_unitario: ['0', [Validators.required, Validators.min(0)]],
-    id_categoria: [0, Validators.required],
+    precio_unitario: ['0', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/), Validators.min(0)]],
+    id_categoria: [0, [Validators.required, Validators.min(1)]],
   });
 
   constructor() {
@@ -207,8 +229,8 @@ export class ProductosComponent {
     this.loading.set(true);
     forkJoin({ productos: this.productoService.list(), categorias: this.categoriaService.list() }).subscribe({
       next: ({ productos, categorias }) => {
-        this.productos.set(productos);
-        this.categorias.set(categorias);
+        this.productos.set(productos.map((producto) => ({ ...producto, id_categoria: Number(producto.id_categoria) })));
+        this.categorias.set(categorias.map((categoria) => ({ ...categoria, id_categoria: Number(categoria.id_categoria) })));
         this.loading.set(false);
       },
       error: () => {
@@ -224,6 +246,20 @@ export class ProductosComponent {
 
   setPage(page: number): void {
     this.page.set(page);
+  }
+
+  onPrecioFocus(): void {
+    const currentValue = this.form.controls.precio_unitario.value.trim();
+    if (currentValue === '0') {
+      this.form.controls.precio_unitario.setValue('');
+    }
+  }
+
+  onPrecioBlur(): void {
+    const currentValue = this.form.controls.precio_unitario.value.trim();
+    if (currentValue === '') {
+      this.form.controls.precio_unitario.setValue('0');
+    }
   }
 
   getCategoriaName(id: number): string {
@@ -243,7 +279,7 @@ export class ProductosComponent {
       nombre: producto.nombre,
       descripcion: producto.descripcion ?? '',
       precio_unitario: String(producto.precio_unitario ?? 0),
-      id_categoria: producto.id_categoria,
+      id_categoria: Number(producto.id_categoria),
     });
     this.formError.set(null);
     this.modalOpen.set(true);
@@ -259,7 +295,12 @@ export class ProductosComponent {
       return;
     }
 
-    const payload = this.form.getRawValue();
+    const rawPayload = this.form.getRawValue();
+    const payload = {
+      ...rawPayload,
+      precio_unitario: Number(rawPayload.precio_unitario),
+      id_categoria: Number(rawPayload.id_categoria),
+    };
     this.saving.set(true);
     this.formError.set(null);
 

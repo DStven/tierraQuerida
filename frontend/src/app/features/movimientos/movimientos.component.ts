@@ -3,8 +3,9 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Inventario, MovimientoStock, Proveedor, TipoMovimiento } from '../../core/models/database.model';
+import { Categoria, Inventario, MovimientoStock, Proveedor, TipoMovimiento } from '../../core/models/database.model';
 import { AuthService } from '../../core/services/auth.service';
+import { CategoriaService } from '../../core/services/categoria.service';
 import { InventarioService } from '../../core/services/inventario.service';
 import { MovimientoPayload, MovimientoService } from '../../core/services/movimiento.service';
 import { ProveedorService } from '../../core/services/proveedor.service';
@@ -13,8 +14,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header.compone
 import { PaginationComponent } from '../../shared/components/pagination.component';
 import { SkeletonTableComponent } from '../../shared/components/skeleton-table.component';
 import { SpinnerComponent } from '../../shared/components/spinner.component';
+import { NumericInputDirective } from '../../shared/directives/numeric-input.directive';
 import { ToastService } from '../../shared/services/toast.service';
-import { filterBySearch } from '../../shared/utils/filter.util';
 import { debounce } from '../../shared/utils/debounce.util';
 import { isFieldInvalid } from '../../shared/utils/form.util';
 import { buildPagination, paginate } from '../../shared/utils/pagination.util';
@@ -30,6 +31,7 @@ import { buildPagination, paginate } from '../../shared/utils/pagination.util';
     EmptyStateComponent,
     SkeletonTableComponent,
     SpinnerComponent,
+    NumericInputDirective,
   ],
   template: `
     <section class="mx-auto max-w-7xl space-y-6">
@@ -59,17 +61,50 @@ import { buildPagination, paginate } from '../../shared/utils/pagination.util';
               </select>
             </label>
             <label class="form-label">
-              Producto<span class="required-mark">*</span>
-              <select formControlName="id_inventario" class="form-input mt-1.5" [class.is-invalid]="invalid('id_inventario')">
-                @for (item of inventario(); track item.id_inventario) {
-                  <option [value]="item.id_inventario">{{ item.producto }} ({{ item.cantidad }})</option>
+              Categoría<span class="required-mark">*</span>
+              <select
+                formControlName="id_categoria"
+                class="form-input mt-1.5"
+                [class.is-invalid]="invalid('id_categoria')"
+                (change)="onCategoriaChange()"
+              >
+                <option [ngValue]="0">Seleccione...</option>
+                @for (categoria of categorias(); track categoria.id_categoria) {
+                  <option [ngValue]="categoria.id_categoria">{{ categoria.nombre_categoria }}</option>
                 }
               </select>
+              @if (invalid('id_categoria')) { <span class="form-error">Seleccione una categoría</span> }
+            </label>
+            <label class="form-label">
+              Producto<span class="required-mark">*</span>
+              <select formControlName="id_inventario" class="form-input mt-1.5" [class.is-invalid]="invalid('id_inventario')">
+                <option [ngValue]="0">Seleccione...</option>
+                @for (item of filteredInventario(); track item.id_inventario) {
+                  <option [ngValue]="item.id_inventario">{{ item.producto }} ({{ item.cantidad }})</option>
+                }
+              </select>
+              @if (invalid('id_inventario')) { <span class="form-error">Seleccione un producto</span> }
+              @if (showNoProductsMessage()) { <span class="form-error">No existen productos para la categoría seleccionada</span> }
             </label>
             <label class="form-label">
               Cantidad<span class="required-mark">*</span>
-              <input type="number" min="1" formControlName="cantidad" class="form-input mt-1.5" [class.is-invalid]="invalid('cantidad')" />
+              <input
+                type="text"
+                appNumericInput="int"
+                formControlName="cantidad"
+                class="form-input mt-1.5"
+                [class.is-invalid]="invalid('cantidad')"
+                inputmode="numeric"
+                placeholder="0"
+                (focus)="onCantidadFocus()"
+                (blur)="onCantidadBlur()"
+              />
               @if (invalid('cantidad')) { <span class="form-error">Ingrese una cantidad válida</span> }
+            </label>
+            <label class="form-label">
+              Fecha<span class="required-mark">*</span>
+              <input type="datetime-local" formControlName="fecha_movimiento" class="form-input mt-1.5" [class.is-invalid]="invalid('fecha_movimiento')" />
+              @if (invalid('fecha_movimiento')) { <span class="form-error">Ingrese una fecha válida</span> }
             </label>
             @if (form.value.tipo_movimiento === 'Entrada') {
               <label class="form-label">
@@ -172,6 +207,7 @@ export class MovimientosComponent {
   private readonly fb = inject(FormBuilder);
   private readonly movimientoService = inject(MovimientoService);
   private readonly inventarioService = inject(InventarioService);
+  private readonly categoriaService = inject(CategoriaService);
   private readonly proveedorService = inject(ProveedorService);
   private readonly toast = inject(ToastService);
 
@@ -182,6 +218,7 @@ export class MovimientosComponent {
 
   readonly breadcrumbs = [{ label: 'Inicio', path: '/dashboard' }, { label: 'Movimientos' }];
   readonly inventario = signal<Inventario[]>([]);
+  readonly categorias = signal<Categoria[]>([]);
   readonly proveedores = signal<Proveedor[]>([]);
   readonly movimientos = signal<MovimientoStock[]>([]);
   readonly loading = signal(true);
@@ -192,8 +229,42 @@ export class MovimientosComponent {
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);
 
+  readonly orderedMovimientos = computed(() => [...this.movimientos()].sort((a, b) => {
+    const dateA = this.parseDate(a.fecha_movimiento).getTime();
+    const dateB = this.parseDate(b.fecha_movimiento).getTime();
+    if (dateA !== dateB) {
+      return dateB - dateA;
+    }
+    return Number(b.id_movimiento) - Number(a.id_movimiento);
+  }));
+
+  readonly filteredInventario = computed(() => {
+    const categoriaId = Number(this.form.controls.id_categoria.value);
+    if (!categoriaId) {
+      return [];
+    }
+    return this.inventario().filter((item) => Number(item.id_categoria) === categoriaId);
+  });
+
+  readonly showNoProductsMessage = computed(() =>
+    Number(this.form.controls.id_categoria.value) > 0 && this.filteredInventario().length === 0,
+  );
+
   readonly filtered = computed(() => {
-    let items = filterBySearch(this.movimientos(), this.search(), ['observacion', 'tipo_movimiento']);
+    const term = this.search().trim().toLowerCase();
+    let items = this.orderedMovimientos();
+    if (term) {
+      items = items.filter((mov) => {
+        const producto = this.productName(mov.id_inventario).toLowerCase();
+        return (
+          String(mov.observacion ?? '').toLowerCase().includes(term)
+          || String(mov.tipo_movimiento ?? '').toLowerCase().includes(term)
+          || String(mov.cantidad ?? '').toLowerCase().includes(term)
+          || String(mov.fecha_movimiento ?? '').toLowerCase().includes(term)
+          || producto.includes(term)
+        );
+      });
+    }
     const tipo = this.tipoFilter();
     if (tipo) items = items.filter((mov) => mov.tipo_movimiento === tipo);
     return items;
@@ -204,8 +275,10 @@ export class MovimientosComponent {
 
   readonly form = this.fb.nonNullable.group({
     tipo_movimiento: ['Entrada' as TipoMovimiento, Validators.required],
-    id_inventario: [0, Validators.required],
-    cantidad: [1, [Validators.required, Validators.min(1)]],
+    id_categoria: [0, [Validators.required, Validators.min(1)]],
+    id_inventario: [0, [Validators.required, Validators.min(1)]],
+    cantidad: ['0', [Validators.required, Validators.pattern(/^\d+$/), Validators.min(1)]],
+    fecha_movimiento: [this.getCurrentDateTimeInput(), Validators.required],
     id_proveedor: [null as number | null],
     observacion: [''],
   });
@@ -213,16 +286,17 @@ export class MovimientosComponent {
   constructor() {
     forkJoin({
       inventario: this.inventarioService.list(),
+      categorias: this.categoriaService.list(),
       proveedores: this.proveedorService.list(),
       movimientos: this.auth.isAdmin()
         ? this.movimientoService.list().pipe(catchError(() => of([] as MovimientoStock[])))
         : of([] as MovimientoStock[]),
     }).subscribe({
-      next: ({ inventario, proveedores, movimientos }) => {
+      next: ({ inventario, categorias, proveedores, movimientos }) => {
         this.inventario.set(inventario);
+        this.categorias.set(categorias);
         this.proveedores.set(proveedores);
-        this.movimientos.set(movimientos);
-        if (inventario.length) this.form.patchValue({ id_inventario: inventario[0].id_inventario });
+        this.movimientos.set(this.uniqueMovimientos(movimientos));
         this.loading.set(false);
       },
       error: () => {
@@ -249,11 +323,33 @@ export class MovimientosComponent {
     this.page.set(page);
   }
 
+  onCategoriaChange(): void {
+    this.form.patchValue({ id_inventario: 0 });
+  }
+
+  onCantidadFocus(): void {
+    const cantidad = this.form.controls.cantidad.value.trim();
+    if (cantidad === '0') {
+      this.form.controls.cantidad.setValue('');
+    }
+  }
+
+  onCantidadBlur(): void {
+    const cantidad = this.form.controls.cantidad.value.trim();
+    if (!cantidad) {
+      this.form.controls.cantidad.setValue('0');
+    }
+  }
+
   productName(id: number): string {
     return this.inventario().find((item) => Number(item.id_inventario) === Number(id))?.producto ?? `Producto ${id}`;
   }
 
   register(): void {
+    if (this.saving()) {
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.toast.warning('Complete los campos obligatorios');
@@ -266,6 +362,7 @@ export class MovimientosComponent {
     const payload: MovimientoPayload = {
       tipo_movimiento: raw.tipo_movimiento,
       cantidad: Number(raw.cantidad),
+      fecha_movimiento: this.toSqlDateTime(raw.fecha_movimiento),
       observacion: raw.observacion || null,
       id_inventario: Number(raw.id_inventario),
       id_proveedor: raw.tipo_movimiento === 'Entrada' ? raw.id_proveedor : null,
@@ -279,8 +376,11 @@ export class MovimientosComponent {
       next: (data) => {
         this.saving.set(false);
         this.toast.success(`Movimiento registrado. Stock: ${data.stock_anterior} → ${data.stock_actual}`);
-        this.form.patchValue({ cantidad: 1, observacion: '', id_proveedor: null });
+        this.form.patchValue({ cantidad: '0', fecha_movimiento: this.getCurrentDateTimeInput(), observacion: '', id_proveedor: null });
         this.reloadInventarioAndHistory();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('movimientos:updated'));
+        }
       },
       error: (err: { error?: { message?: string } }) => {
         const msg = err.error?.message ?? 'No fue posible registrar el movimiento';
@@ -292,12 +392,55 @@ export class MovimientosComponent {
   }
 
   private reloadInventarioAndHistory(): void {
-    this.inventarioService.list().subscribe((inventario) => this.inventario.set(inventario));
+    this.inventarioService.list().subscribe((inventario) => {
+      this.inventario.set(inventario);
+      const selectedCategoria = Number(this.form.controls.id_categoria.value);
+      const selectedProducto = Number(this.form.controls.id_inventario.value);
+      const hasSelectedProduct = inventario.some(
+        (item) => Number(item.id_categoria) === selectedCategoria && Number(item.id_inventario) === selectedProducto,
+      );
+      if (!hasSelectedProduct) {
+        this.form.patchValue({ id_inventario: 0 });
+      }
+    });
+
     if (this.auth.isAdmin()) {
       this.movimientoService.list().subscribe({
-        next: (movimientos) => this.movimientos.set(movimientos),
+        next: (movimientos) => this.movimientos.set(this.uniqueMovimientos(movimientos)),
         error: () => this.movimientos.set([]),
       });
     }
+  }
+
+  private uniqueMovimientos(items: MovimientoStock[]): MovimientoStock[] {
+    const seen = new Set<number>();
+    const unique: MovimientoStock[] = [];
+    for (const item of items) {
+      const id = Number(item.id_movimiento);
+      if (seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      unique.push(item);
+    }
+    return unique;
+  }
+
+  private parseDate(value: string): Date {
+    return new Date(value.includes('T') ? value : value.replace(' ', 'T'));
+  }
+
+  private getCurrentDateTimeInput(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  private toSqlDateTime(value: string): string {
+    return value ? `${value}:00`.replace('T', ' ') : this.getCurrentDateTimeInput().replace('T', ' ') + ':00';
   }
 }

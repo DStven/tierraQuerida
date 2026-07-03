@@ -2,6 +2,7 @@ const { pool } = require('../config/db');
 const movimientoStockModel = require('../models/movimientoStockModel');
 const asyncHandler = require('../utils/asyncHandler');
 const { success, error } = require('../utils/apiResponse');
+const auditLogger = require('../utils/auditLogger');
 
 // Acepta Entrada o Salida sin depender de mayusculas.
 const normalizeMovementType = (tipoMovimiento) => {
@@ -46,8 +47,11 @@ const getById = asyncHandler(async (req, res) => {
 const create = asyncHandler(async (req, res) => {
   const tipoMovimiento = normalizeMovementType(req.body.tipo_movimiento);
   const cantidadMovimiento = Number(req.body.cantidad);
-  const idInventario = req.body.id_inventario;
+  const idInventario = Number(req.body.id_inventario);
   const idUsuario = req.body.id_usuario || req.user.id_usuario;
+  const fechaMovimiento = req.body.fecha_movimiento || getCurrentDateTime();
+  const observacion = req.body.observacion ? String(req.body.observacion).trim() : null;
+  const idProveedor = req.body.id_proveedor || null;
 
   if (!tipoMovimiento) {
     return error(res, 400, 'tipo_movimiento debe ser Entrada o Salida');
@@ -57,7 +61,7 @@ const create = asyncHandler(async (req, res) => {
     return error(res, 400, 'cantidad debe ser un numero mayor a cero');
   }
 
-  if (!idInventario) {
+  if (!Number.isFinite(idInventario) || idInventario <= 0) {
     return error(res, 400, 'id_inventario es obligatorio');
   }
 
@@ -90,6 +94,27 @@ const create = asyncHandler(async (req, res) => {
       return error(res, 404, 'Producto de inventario no encontrado');
     }
 
+    // Evita insertar dos movimientos identicos en el mismo segundo por doble envio.
+    const [duplicados] = await connection.query(
+      `SELECT id_movimiento
+      FROM movimiento_stock
+      WHERE tipo_movimiento = ?
+        AND cantidad = ?
+        AND id_usuario = ?
+        AND id_inventario = ?
+        AND id_proveedor <=> ?
+        AND observacion <=> ?
+        AND ABS(TIMESTAMPDIFF(SECOND, fecha_movimiento, ?)) <= 1
+      ORDER BY id_movimiento DESC
+      LIMIT 1`,
+      [tipoMovimiento, cantidadMovimiento, idUsuario, idInventario, idProveedor, observacion, fechaMovimiento],
+    );
+
+    if (duplicados.length > 0) {
+      await connection.rollback();
+      return error(res, 409, 'Movimiento duplicado detectado. Verifique el historial antes de registrar de nuevo.');
+    }
+
     const stockActual = Number(inventario.cantidad);
     const nuevoStock = tipoMovimiento === 'Entrada'
       ? stockActual + cantidadMovimiento
@@ -114,15 +139,21 @@ const create = asyncHandler(async (req, res) => {
     const movimiento = await movimientoStockModel.createWithConnection(connection, {
       tipo_movimiento: tipoMovimiento,
       cantidad: cantidadMovimiento,
-      fecha_movimiento: req.body.fecha_movimiento || getCurrentDateTime(),
-      observacion: req.body.observacion || null,
+      fecha_movimiento: fechaMovimiento,
+      observacion,
       id_usuario: idUsuario,
-      id_proveedor: req.body.id_proveedor || null,
+      id_proveedor: idProveedor,
       id_inventario: idInventario,
     });
 
     // Confirma los cambios si todo salio bien.
     await connection.commit();
+
+    auditLogger.log(
+      idUsuario,
+      `Registrar movimiento ${tipoMovimiento}`,
+      `Movimiento ${tipoMovimiento} de ${cantidadMovimiento} unidades en inventario ${idInventario}. Stock ${stockActual} -> ${nuevoStock}`,
+    );
 
     return success(res, 201, 'Movimiento de stock registrado correctamente', {
       movimiento,

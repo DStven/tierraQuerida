@@ -404,6 +404,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   readonly movementsChartRef = viewChild<ElementRef<HTMLCanvasElement>>('movementsChart');
 
   private charts: Chart[] = [];
+  private readonly movimientosUpdatedListener = () => this.loadData(false, true);
 
   readonly inventario = signal<Inventario[]>([]);
   readonly usuarios = signal<UsuarioResponse[]>([]);
@@ -506,6 +507,9 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
 
   constructor() {
     this.loadData(true);
+    if (isPlatformBrowser(this.platformId)) {
+      window.addEventListener('movimientos:updated', this.movimientosUpdatedListener);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -515,6 +519,9 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.removeEventListener('movimientos:updated', this.movimientosUpdatedListener);
+    }
     this.destroyCharts();
   }
 
@@ -522,7 +529,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
     this.loadData(false);
   }
 
-  private loadData(initial: boolean): void {
+  private loadData(initial: boolean, silent = false): void {
     if (initial) {
       this.loading.set(true);
     } else {
@@ -552,7 +559,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         this.loading.set(false);
         this.refreshing.set(false);
         requestAnimationFrame(() => this.renderCharts());
-        if (!initial) {
+        if (!initial && !silent) {
           this.toast.success('Estadísticas actualizadas correctamente');
         }
       },
