@@ -60,13 +60,13 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>
-        <select [value]="estadoFilter()" (change)="onEstadoFilter($event)" class="form-input w-auto min-w-[160px]">
+        <select [value]="estadoFilter()" (change)="onEstadoFilter($event)" class="form-input w-full min-w-0 sm:w-auto sm:min-w-[160px]">
           <option value="">Todos los estados</option>
           <option value="Disponible">Disponible</option>
           <option value="Agotado">Agotado</option>
           <option value="low">Stock mínimo</option>
         </select>
-        <select [value]="categoriaFilter()" (change)="onCategoriaFilter($event)" class="form-input w-auto min-w-[160px]">
+        <select [value]="categoriaFilter()" (change)="onCategoriaFilter($event)" class="form-input w-full min-w-0 sm:w-auto sm:min-w-[160px]">
           <option value="">Todas las categorías</option>
           @for (categoria of categorias(); track categoria.id_categoria) {
             <option [value]="categoria.id_categoria">{{ categoria.nombre_categoria }}</option>

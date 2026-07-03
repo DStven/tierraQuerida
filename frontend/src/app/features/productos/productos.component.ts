@@ -88,7 +88,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                     <td class="px-4 py-3 text-zinc-300">{{ producto.precio_unitario }}</td>
                     <td class="px-4 py-3 text-zinc-400">{{ getCategoriaName(producto.id_categoria) }}</td>
                     <td class="px-4 py-3">
-                      <div class="flex gap-2">
+                      <div class="flex flex-wrap gap-2">
                         <button type="button" (click)="openEdit(producto)" class="btn-ghost">Editar</button>
                         <button type="button" (click)="remove(producto)" class="btn-danger">Eliminar</button>
                       </div>

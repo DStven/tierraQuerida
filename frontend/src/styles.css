@@ -246,6 +246,18 @@ table {
   padding: 1rem 1.25rem;
 }
 
+@media (max-width: 640px) {
+  .card-header {
+    align-items: stretch;
+    gap: 0.625rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .card-header > * {
+    width: 100%;
+  }
+}
+
 .form-input {
   width: 100%;
   border-radius: 0.5rem;
@@ -536,6 +548,10 @@ select.form-input {
 
 .table-sortable:hover {
   color: rgb(251, 191, 36);
+}
+
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
 }
 
 .avatar {

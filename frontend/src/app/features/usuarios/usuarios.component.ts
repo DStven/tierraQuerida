@@ -96,7 +96,7 @@ type SortField = 'identificacion' | 'nombre' | 'email' | 'estado' | 'id_rol';
                     </td>
                     <td class="px-4 py-3 text-zinc-300">{{ roleName(usuario.id_rol) }}</td>
                     <td class="px-4 py-3">
-                      <div class="flex gap-2">
+                      <div class="flex flex-wrap gap-2">
                         <button type="button" (click)="openEdit(usuario)" class="btn-ghost">Editar</button>
                         <button type="button" (click)="remove(usuario)" class="btn-danger">Eliminar</button>
                       </div>

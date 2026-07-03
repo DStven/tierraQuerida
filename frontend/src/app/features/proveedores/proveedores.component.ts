@@ -44,7 +44,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
 
       <div class="card overflow-hidden">
         <div class="card-header">
-          <div class="search-box flex-1 min-w-[200px] max-w-md">
+          <div class="search-box flex-1 min-w-0 max-w-md">
             <input
               type="search"
               [value]="search()"
@@ -60,7 +60,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
             <select
               [value]="cityFilter()"
               (change)="onCityFilter($event)"
-              class="form-input w-auto min-w-[140px] py-2 text-sm"
+              class="form-input w-full min-w-0 py-2 text-sm sm:w-auto sm:min-w-[140px]"
             >
               <option value="">Todas las ciudades</option>
               @for (ciudad of ciudades(); track ciudad.id_ciudad) {
@@ -70,7 +70,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
             <select
               [value]="deptFilter()"
               (change)="onDeptFilter($event)"
-              class="form-input w-auto min-w-[160px] py-2 text-sm"
+              class="form-input w-full min-w-0 py-2 text-sm sm:w-auto sm:min-w-[160px]"
             >
               <option value="">Todos los departamentos</option>
               @for (depto of departamentos(); track depto.id_dpto) {
