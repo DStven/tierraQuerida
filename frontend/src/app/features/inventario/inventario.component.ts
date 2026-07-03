@@ -43,7 +43,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
         [filteredCount]="filtered().length"
       >
         @if (auth.isAdmin()) {
-          <button actions type="button" (click)="openCreate()" class="btn-primary">Nuevo producto</button>
+          <button actions type="button" (click)="openCreate()" class="btn-primary">Nuevo registro de inventario</button>
         }
       </app-page-header>
 
@@ -144,7 +144,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                 Categoría<span class="required-mark">*</span>
                 <select
                   formControlName="id_categoria"
-                  (change)="onCategoriaChange($event)"
+                  (change)="onCategoriaChange()"
                   class="form-input mt-1.5"
                   [class.is-invalid]="invalid('id_categoria')"
                   aria-label="Seleccionar categoría"
@@ -177,7 +177,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                 </div>
                 @if (invalid('id_producto')) { <span class="form-error">Seleccione un producto</span> }
                 @if (form.getRawValue().id_categoria && !productsLoading() && products().length === 0) {
-                  <span class="form-error">No hay productos disponibles para esta categoría</span>
+                  <span class="form-error">No hay productos registrados para esta categoría.</span>
                 }
               </label>
               <label class="form-label">
@@ -268,8 +268,8 @@ export class InventarioComponent {
   readonly pageItems = computed(() => paginate(this.filtered(), this.pagination().page, this.pageSize));
 
   readonly form = this.fb.nonNullable.group({
-    id_categoria: [0, Validators.required],
-    id_producto: [0, Validators.required],
+    id_categoria: [0, [Validators.required, Validators.min(1)]],
+    id_producto: [0, [Validators.required, Validators.min(1)]],
     cantidad: ['0', [Validators.required, Validators.min(0)]],
     stock_minimo: ['0', [Validators.required, Validators.min(0)]],
     estado: ['Disponible' as EstadoInventario, Validators.required],
@@ -340,8 +340,8 @@ export class InventarioComponent {
     this.applySearch((event.target as HTMLInputElement).value);
   }
 
-  onCategoriaChange(event: Event): void {
-    const categoryId = Number((event.target as HTMLSelectElement).value);
+  onCategoriaChange(): void {
+    const categoryId = Number(this.form.getRawValue().id_categoria || 0);
     this.form.patchValue({ id_producto: 0 });
     this.loadProducts(categoryId);
   }

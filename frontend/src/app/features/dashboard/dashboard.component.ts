@@ -18,8 +18,6 @@ import {
   Categoria,
   Inventario,
   MovimientoStock,
-  Producto,
-  Proveedor,
   UsuarioResponse,
 } from '../../core/models/database.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -27,8 +25,6 @@ import { AuditoriaService } from '../../core/services/auditoria.service';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { InventarioService } from '../../core/services/inventario.service';
 import { MovimientoService } from '../../core/services/movimiento.service';
-import { ProductoService } from '../../core/services/producto.service';
-import { ProveedorService } from '../../core/services/proveedor.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { APP_ICONS } from '../../shared/constants/icon-names';
 import { AppIconComponent } from '../../shared/components/app-icon.component';
@@ -396,8 +392,6 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly toast = inject(ToastService);
   private readonly inventarioService = inject(InventarioService);
-  private readonly proveedorService = inject(ProveedorService);
-  private readonly productoService = inject(ProductoService);
   private readonly usuarioService = inject(UsuarioService);
   private readonly movimientoService = inject(MovimientoService);
   private readonly categoriaService = inject(CategoriaService);
@@ -412,13 +406,15 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   private charts: Chart[] = [];
 
   readonly inventario = signal<Inventario[]>([]);
-  readonly proveedores = signal<Proveedor[]>([]);
-  readonly productos = signal<Producto[]>([]);
   readonly usuarios = signal<UsuarioResponse[]>([]);
   readonly movimientos = signal<MovimientoStock[]>([]);
   readonly categorias = signal<Categoria[]>([]);
   readonly auditorias = signal<Auditoria[]>([]);
-  readonly lowStock = signal<Inventario[]>([]);
+  readonly lowStock = computed(() => this.inventario().filter((item) => {
+    const cantidad = this.toNumber(item.cantidad);
+    const minimo = this.toNumber(item.stock_minimo);
+    return cantidad <= minimo;
+  }));
   readonly loading = signal(true);
   readonly refreshing = signal(false);
   readonly lastUpdated = signal<string | null>(null);
@@ -495,9 +491,9 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
       delay: '160ms',
     },
     {
-      label: 'Alertas de inventario',
+      label: 'Stock bajo',
       value: this.lowStock().length,
-      hint: 'Stock bajo detectado',
+      hint: 'Cantidad menor o igual al mínimo',
       icon: APP_ICONS.alertas,
       accent: 'bg-yellow-500',
       gradientClass: 'from-yellow-500/[0.08] via-transparent to-transparent',
@@ -535,8 +531,6 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
 
     forkJoin({
       inventario: this.inventarioService.list().pipe(catchError(() => of([] as Inventario[]))),
-      proveedores: this.proveedorService.list().pipe(catchError(() => of([] as Proveedor[]))),
-      productos: this.productoService.list().pipe(catchError(() => of([] as Producto[]))),
       categorias: this.categoriaService.list().pipe(catchError(() => of([] as Categoria[]))),
       usuarios: this.auth.isAdmin()
         ? this.usuarioService.list().pipe(catchError(() => of([] as UsuarioResponse[])))
@@ -548,20 +542,12 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         ? this.auditoriaService.list().pipe(catchError(() => of([] as Auditoria[])))
         : of([] as Auditoria[]),
     }).subscribe({
-      next: ({ inventario, proveedores, productos, usuarios, movimientos, categorias, auditorias }) => {
+      next: ({ inventario, usuarios, movimientos, categorias, auditorias }) => {
         this.inventario.set(inventario);
-        this.proveedores.set(proveedores);
-        this.productos.set(productos);
         this.usuarios.set(usuarios);
         this.movimientos.set(movimientos);
         this.categorias.set(categorias);
         this.auditorias.set(auditorias);
-        // Filtrar productos con stock bajo (cantidad > 0 AND cantidad < stock_minimo)
-        this.lowStock.set(inventario.filter((item: Inventario) => {
-          const cantidad = this.toNumber(item.cantidad);
-          const minimo = this.toNumber(item.stock_minimo);
-          return cantidad > 0 && cantidad <= minimo;
-        }));
         this.lastUpdated.set(new Date().toISOString());
         this.loading.set(false);
         this.refreshing.set(false);
@@ -599,10 +585,12 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
     if (statusCanvas) {
       const lowStockIds = new Set(this.lowStock().map((i) => i.id_inventario));
       const disponibles = this.inventario().filter(
-        (item) => this.isDisponible(item.estado) && !lowStockIds.has(item.id_inventario),
+        (item) => this.isDisponible(item.estado)
+          && this.toNumber(item.cantidad) > this.toNumber(item.stock_minimo)
+          && !lowStockIds.has(item.id_inventario),
       ).length;
-      const low = this.lowStock().length;
-      const agotados = this.inventario().filter((item) => !this.isDisponible(item.estado)).length;
+      const agotados = this.inventario().filter((item) => this.toNumber(item.cantidad) === 0).length;
+      const low = Math.max(this.lowStock().length - agotados, 0);
 
       const config: ChartConfiguration = {
         type: 'doughnut',
