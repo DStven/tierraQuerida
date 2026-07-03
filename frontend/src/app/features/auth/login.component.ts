@@ -85,22 +85,18 @@ import { ToastService } from '../../shared/services/toast.service';
 
             <!-- Email -->
             <div class="space-y-1.5">
-              <label for="email" class="text-sm font-medium text-zinc-300">Email</label>
+              <label for="email" class="form-label">Email</label>
               <input
                 id="email"
                 type="email"
                 autocomplete="email"
                 formControlName="email"
                 placeholder="usuario@tierraquerida.com"
-                class="w-full rounded-xl border bg-zinc-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600"
-                [class.border-red-500/50]="isInvalid('email')"
-                [class.border-white/10]="!isInvalid('email')"
-                [class.focus:border-amber-400]="!isInvalid('email')"
-                [class.focus:ring-2]="!isInvalid('email')"
-                [class.focus:ring-amber-400/20]="!isInvalid('email')"
+                class="form-input rounded-xl bg-zinc-950/80 px-4 py-3 text-sm"
+                [class.is-invalid]="isInvalid('email')"
               />
               @if (isInvalid('email')) {
-                <p class="text-xs text-red-300">
+                <p class="form-error">
                   @if (form.controls.email.errors?.['required']) {
                     El email es obligatorio.
                   } @else if (form.controls.email.errors?.['email']) {
@@ -112,7 +108,7 @@ import { ToastService } from '../../shared/services/toast.service';
 
             <!-- Contraseña -->
             <div class="mt-4 space-y-1.5">
-              <label for="clave" class="text-sm font-medium text-zinc-300">Contraseña</label>
+              <label for="clave" class="form-label">Contraseña</label>
               <div class="relative">
                 <input
                   id="clave"
@@ -120,24 +116,20 @@ import { ToastService } from '../../shared/services/toast.service';
                   autocomplete="current-password"
                   formControlName="clave"
                   placeholder="••••••••"
-                  class="w-full rounded-xl border bg-zinc-950/80 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-zinc-600"
-                  [class.border-red-500/50]="isInvalid('clave')"
-                  [class.border-white/10]="!isInvalid('clave')"
-                  [class.focus:border-amber-400]="!isInvalid('clave')"
-                  [class.focus:ring-2]="!isInvalid('clave')"
-                  [class.focus:ring-amber-400/20]="!isInvalid('clave')"
+                  class="form-input rounded-xl bg-zinc-950/80 px-4 py-3 pr-12 text-sm"
+                  [class.is-invalid]="isInvalid('clave')"
                 />
                 <button
                   type="button"
                   (click)="showPassword.set(!showPassword())"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs text-zinc-500 transition hover:text-zinc-300"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex min-h-8 items-center rounded-md px-2 py-1 text-xs text-zinc-500 transition hover:text-zinc-300"
                   [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                 >
                   {{ showPassword() ? 'Ocultar' : 'Ver' }}
                 </button>
               </div>
               @if (isInvalid('clave')) {
-                <p class="text-xs text-red-300">
+                <p class="form-error">
                   @if (form.controls.clave.errors?.['required']) {
                     La contraseña es obligatoria.
                   } @else if (form.controls.clave.errors?.['minlength']) {
@@ -150,7 +142,7 @@ import { ToastService } from '../../shared/services/toast.service';
             <button
               type="submit"
               [disabled]="loading()"
-              class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-amber-900/25 transition hover:from-amber-400 hover:to-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
+              class="mt-6 flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-amber-900/25 transition hover:from-amber-400 hover:to-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               @if (loading()) {
                 <span class="size-4 animate-spin rounded-full border-2 border-zinc-950/30 border-t-zinc-950"></span>

@@ -254,6 +254,7 @@ table {
   min-height: 2.75rem;
   padding: 0.75rem 0.9rem;
   font-size: 0.9375rem;
+  line-height: 1.25rem;
   color: rgb(244, 244, 245);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -288,16 +289,34 @@ textarea.form-input {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
+.form-input:disabled,
+.form-select:disabled,
+textarea.form-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: rgba(24, 24, 27, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+  transform: none;
+}
+
 .form-select {
   width: 100%;
   border-radius: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgb(9, 9, 11);
+  min-height: 2.75rem;
   padding: 0.75rem 0.9rem;
   font-size: 0.9375rem;
   color: rgb(244, 244, 245);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+select.form-input {
+  min-height: 2.75rem;
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
 }
 
 .form-select:focus {
