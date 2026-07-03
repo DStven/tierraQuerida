@@ -18,17 +18,17 @@ import { AppIconComponent } from './app-icon.component';
       ></div>
       <div class="absolute -right-4 -top-4 size-20 rounded-full opacity-[0.08] blur-2xl" [class]="accent()"></div>
 
-      <div class="relative flex items-start justify-between gap-3">
+      <div class="relative flex items-start justify-between gap-2.5 sm:gap-3">
         <div class="min-w-0 flex-1">
-          <p class="text-[13px] font-medium text-zinc-500">{{ label() }}</p>
+          <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">{{ label() }}</p>
           @if (loading()) {
             <div class="mt-3 h-9 w-20 animate-pulse rounded-md bg-white/[0.06]"></div>
           } @else {
-            <p class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            <p class="mt-2 text-2xl font-semibold leading-none tracking-tight text-white sm:text-[2rem]">
               <app-animated-counter [value]="value()" [animate]="!loading()" />
             </p>
           }
-          <p class="mt-1.5 text-xs text-zinc-500">{{ hint() }}</p>
+          <p class="mt-2 text-xs text-zinc-500">{{ hint() }}</p>
           @if (trend() !== null && !loading()) {
             <p
               class="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
@@ -43,7 +43,7 @@ import { AppIconComponent } from './app-icon.component';
         </div>
 
         <div class="icon-badge shrink-0">
-          <app-icon [icon]="icon()" [size]="24" color="#F59E0B" />
+          <app-icon [icon]="icon()" [size]="22" color="#F59E0B" />
         </div>
       </div>
 

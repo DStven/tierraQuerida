@@ -64,7 +64,7 @@ interface StatCardConfig {
     EmptyStateComponent,
   ],
   template: `
-    <section class="dashboard-fade-in mx-auto max-w-7xl space-y-8">
+    <section class="dashboard-fade-in mx-auto max-w-7xl space-y-6 lg:space-y-8">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <app-page-header
           title="Dashboard"
@@ -72,8 +72,8 @@ interface StatCardConfig {
           [breadcrumbs]="breadcrumbs"
         />
 
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-2 text-xs text-emerald-300">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <div class="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3.5 py-1.5 text-xs text-emerald-300">
             <span class="relative flex size-2">
               @if (loading() || refreshing()) {
                 <span class="relative inline-flex size-2 rounded-full bg-amber-400 animate-pulse"></span>
@@ -96,7 +96,7 @@ interface StatCardConfig {
             type="button"
             (click)="refreshStats()"
             [disabled]="loading() || refreshing()"
-            class="btn-secondary px-3 py-2 text-xs"
+            class="btn-secondary h-9 px-3 text-xs"
           >
             @if (refreshing()) {
               <app-spinner size="sm" variant="light" />
@@ -133,16 +133,16 @@ interface StatCardConfig {
         }
       </div>
 
-      <div class="grid gap-6 lg:grid-cols-2">
-        <div class="chart-card p-5" style="animation-delay: 80ms">
-          <h3 class="text-sm font-semibold text-white">Estado del inventario</h3>
-          <p class="text-xs text-zinc-500">Distribución por disponibilidad</p>
+      <div class="grid gap-5 lg:gap-6 lg:grid-cols-2">
+        <div class="chart-card p-4 sm:p-5" style="animation-delay: 80ms">
+          <h3 class="text-base font-semibold text-white">Estado del inventario</h3>
+          <p class="mt-1 text-xs text-zinc-500">Distribución por disponibilidad</p>
           @if (loading()) {
             <div class="mt-4 flex h-64 items-center justify-center">
               <app-spinner size="md" variant="amber" />
             </div>
           } @else {
-            <div class="mt-4 flex justify-center">
+            <div class="mt-5 flex justify-center">
               <div class="relative h-64 w-full max-w-xs">
                 <canvas #statusChart></canvas>
               </div>
@@ -150,37 +150,37 @@ interface StatCardConfig {
           }
         </div>
 
-        <div class="chart-card p-5" style="animation-delay: 120ms">
-          <h3 class="text-sm font-semibold text-white">Productos por categoría</h3>
-          <p class="text-xs text-zinc-500">Cantidad de ítems en inventario</p>
+        <div class="chart-card p-4 sm:p-5" style="animation-delay: 120ms">
+          <h3 class="text-base font-semibold text-white">Productos por categoría</h3>
+          <p class="mt-1 text-xs text-zinc-500">Cantidad de ítems en inventario</p>
           @if (loading()) {
             <div class="mt-4 flex h-64 items-center justify-center">
               <app-spinner size="md" variant="amber" />
             </div>
           } @else {
-            <div class="mt-4 h-64">
+            <div class="mt-5 h-64">
               <canvas #categoryChart></canvas>
             </div>
           }
         </div>
 
-        <div class="chart-card p-5" style="animation-delay: 160ms">
-          <h3 class="text-sm font-semibold text-white">Entradas vs Salidas</h3>
-          <p class="text-xs text-zinc-500">Comparativa de movimientos totales</p>
+        <div class="chart-card p-4 sm:p-5" style="animation-delay: 160ms">
+          <h3 class="text-base font-semibold text-white">Entradas vs Salidas</h3>
+          <p class="mt-1 text-xs text-zinc-500">Comparativa de movimientos totales</p>
           @if (loading()) {
             <div class="mt-4 flex h-64 items-center justify-center">
               <app-spinner size="md" variant="amber" />
             </div>
           } @else {
-            <div class="mt-4 h-64">
+            <div class="mt-5 h-64">
               <canvas #flowChart></canvas>
             </div>
           }
         </div>
 
-        <div class="chart-card p-5" style="animation-delay: 200ms">
-          <h3 class="text-sm font-semibold text-white">Stock bajo</h3>
-          <p class="text-xs text-zinc-500">Productos con alerta de inventario</p>
+        <div class="chart-card p-4 sm:p-5" style="animation-delay: 200ms">
+          <h3 class="text-base font-semibold text-white">Stock bajo</h3>
+          <p class="mt-1 text-xs text-zinc-500">Productos con alerta de inventario</p>
           @if (loading()) {
             <div class="mt-4 flex h-64 items-center justify-center">
               <app-spinner size="md" variant="amber" />
@@ -190,22 +190,22 @@ interface StatCardConfig {
               Sin alertas de stock bajo
             </div>
           } @else {
-            <div class="mt-4 h-64">
+            <div class="mt-5 h-64">
               <canvas #lowStockChart></canvas>
             </div>
           }
         </div>
 
         @if (auth.isAdmin()) {
-          <div class="chart-card p-5 lg:col-span-2" style="animation-delay: 240ms">
-            <h3 class="text-sm font-semibold text-white">Movimientos — últimos 7 días</h3>
-            <p class="text-xs text-zinc-500">Entradas y salidas registradas</p>
+          <div class="chart-card p-4 sm:p-5 lg:col-span-2" style="animation-delay: 240ms">
+            <h3 class="text-base font-semibold text-white">Movimientos — últimos 7 días</h3>
+            <p class="mt-1 text-xs text-zinc-500">Entradas y salidas registradas</p>
             @if (loading()) {
               <div class="mt-4 flex h-72 items-center justify-center">
                 <app-spinner size="md" variant="amber" />
               </div>
             } @else {
-              <div class="mt-4 h-72">
+              <div class="mt-5 h-72">
                 <canvas #movementsChart></canvas>
               </div>
             }
@@ -270,13 +270,13 @@ interface StatCardConfig {
         </section>
 
         <aside class="flex flex-col gap-4 lg:col-span-2">
-          <div class="card p-5">
+          <div class="card p-4 sm:p-5">
             <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Accesos rápidos</p>
             <div class="mt-3 grid grid-cols-2 gap-2">
-              <a routerLink="/inventario" class="rounded-lg border border-white/[0.08] px-3 py-2.5 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Inventario</a>
-              <a routerLink="/movimientos" class="rounded-lg border border-white/[0.08] px-3 py-2.5 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Movimientos</a>
-              <a routerLink="/proveedores" class="rounded-lg border border-white/[0.08] px-3 py-2.5 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Proveedores</a>
-              <a routerLink="/categorias" class="rounded-lg border border-white/[0.08] px-3 py-2.5 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Categorías</a>
+              <a routerLink="/inventario" class="rounded-lg border border-white/[0.08] px-3 py-2 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Inventario</a>
+              <a routerLink="/movimientos" class="rounded-lg border border-white/[0.08] px-3 py-2 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Movimientos</a>
+              <a routerLink="/proveedores" class="rounded-lg border border-white/[0.08] px-3 py-2 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Proveedores</a>
+              <a routerLink="/categorias" class="rounded-lg border border-white/[0.08] px-3 py-2 text-center text-xs text-zinc-300 transition hover:border-amber-500/30 hover:bg-amber-500/5 hover:text-amber-200">Categorías</a>
             </div>
           </div>
         </aside>
