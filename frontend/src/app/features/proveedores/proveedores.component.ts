@@ -199,7 +199,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
                 </h3>
                 <p class="mt-1 text-sm text-zinc-500">Complete la información del proveedor</p>
               </div>
-              <button type="button" (click)="closeModal()" class="rounded-lg p-1 text-zinc-500 transition hover:bg-white/5 hover:text-zinc-300">
+              <button type="button" (click)="closeModal()" class="modal-close" aria-label="Cerrar modal">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
             </div>
@@ -208,7 +208,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
               <p class="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{{ formError() }}</p>
             }
 
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="modal-form-grid sm:grid-cols-2">
               <label class="form-label">
                 NIT <span class="text-red-400">*</span>
                 <input formControlName="nit" class="form-input mt-1.5" [class.is-invalid]="isInvalid('nit')" />
@@ -258,7 +258,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
               </label>
             </div>
 
-            <div class="mt-6 flex justify-end gap-2 border-t border-white/[0.06] pt-4">
+            <div class="modal-footer">
               <button type="button" (click)="closeModal()" class="btn-secondary">Cancelar</button>
               <button type="submit" [disabled]="form.invalid || saving()" class="btn-primary">
                 @if (saving()) { <app-spinner size="sm" /> Guardando... } @else { Guardar }
@@ -279,7 +279,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
                 <p class="text-sm text-zinc-500">NIT: {{ p.nit }}</p>
                 <span class="badge badge-success mt-2">Activo</span>
               </div>
-              <button type="button" (click)="closeDetail()" class="rounded-lg p-1 text-zinc-500 transition hover:bg-white/5 hover:text-zinc-300">
+              <button type="button" (click)="closeDetail()" class="modal-close" aria-label="Cerrar modal detalle">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
             </div>
@@ -307,7 +307,7 @@ type SortField = 'nit' | 'email' | 'id_ciudad';
               </div>
             </dl>
 
-            <div class="mt-6 flex justify-end gap-2">
+            <div class="modal-footer">
               @if (auth.isAdmin()) {
                 <button type="button" (click)="openEditFromDetail(p)" class="btn-primary">Editar</button>
               }

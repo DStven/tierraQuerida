@@ -135,11 +135,19 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
       @if (modalOpen()) {
         <div class="modal-overlay" (click)="closeModal()">
           <form [formGroup]="form" (ngSubmit)="save()" (click)="$event.stopPropagation()" class="modal-content max-w-lg">
-            <h3 class="text-lg font-semibold text-white">{{ editingId() ? 'Editar producto en inventario' : 'Agregar al inventario' }}</h3>
+            <div class="modal-header">
+              <div>
+                <h3 class="modal-title">{{ editingId() ? 'Editar producto en inventario' : 'Agregar al inventario' }}</h3>
+                <p class="modal-subtitle">Configure los datos base del inventario</p>
+              </div>
+              <button type="button" (click)="closeModal()" class="modal-close" aria-label="Cerrar modal">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
             @if (formError()) {
               <p class="mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{{ formError() }}</p>
             }
-            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="modal-form-grid sm:grid-cols-2">
               <label class="form-label sm:col-span-2">
                 Categoría<span class="required-mark">*</span>
                 <select
@@ -212,7 +220,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                 </select>
               </label>
             </div>
-            <div class="mt-6 flex justify-end gap-2">
+            <div class="modal-footer">
               <button type="button" (click)="closeModal()" class="btn-secondary">Cancelar</button>
               <button type="submit" [disabled]="form.invalid || saving()" class="btn-primary">
                 @if (saving()) { <app-spinner size="sm" /> Guardando... } @else { Guardar }
