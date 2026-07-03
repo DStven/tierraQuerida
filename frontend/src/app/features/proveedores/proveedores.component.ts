@@ -14,13 +14,12 @@ import { SkeletonTableComponent } from '../../shared/components/skeleton-table.c
 import { SpinnerComponent } from '../../shared/components/spinner.component';
 import { ConfirmService } from '../../shared/services/confirm.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { filterBySearch } from '../../shared/utils/filter.util';
 import { debounce } from '../../shared/utils/debounce.util';
 import { buildPagination, paginate } from '../../shared/utils/pagination.util';
 import { SortDirection, sortItems, toggleSort } from '../../shared/utils/sort.util';
 import { formatDateEs, getInitials } from '../../shared/utils/string.util';
 
-type SortField = 'nit' | 'razon_social' | 'email' | 'telefono' | 'id_ciudad';
+type SortField = 'nit' | 'email' | 'id_ciudad';
 
 @Component({
   selector: 'app-proveedores',
@@ -50,7 +49,7 @@ type SortField = 'nit' | 'razon_social' | 'email' | 'telefono' | 'id_ciudad';
               type="search"
               [value]="search()"
               (input)="onSearch($event)"
-              placeholder="Buscar por NIT, razón social o email..."
+              placeholder="Buscar por nombre, ciudad o departamento..."
               class="form-input w-full pl-10"
             />
             <svg class="absolute left-3 top-3.5 h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,7 +226,8 @@ type SortField = 'nit' | 'razon_social' | 'email' | 'telefono' | 'id_ciudad';
               </label>
               <label class="form-label">
                 Teléfono
-                <input formControlName="telefono" class="form-input mt-1.5" />
+                <input formControlName="telefono" class="form-input mt-1.5" [class.is-invalid]="isInvalid('telefono')" />
+                @if (isInvalid('telefono')) { <span class="form-error">Ingrese un teléfono válido</span> }
               </label>
               <label class="form-label sm:col-span-2">
                 Dirección
@@ -364,7 +364,30 @@ export class ProveedoresComponent {
   });
 
   readonly filtered = computed(() => {
-    let items = filterBySearch(this.proveedores(), this.search(), ['nit', 'razon_social', 'email', 'telefono']);
+    const citiesById = new Map(
+      this.ciudades().map((ciudad) => [Number(ciudad.id_ciudad), ciudad]),
+    );
+
+    const term = this.search().trim().toLowerCase();
+    let items = this.proveedores();
+
+    if (term) {
+      items = items.filter((proveedor) => {
+        const city = citiesById.get(Number(proveedor.id_ciudad));
+        const dept = city
+          ? this.departamentos().find((d) => Number(d.id_dpto) === Number(city.id_dpto))
+          : null;
+
+        return (
+          String(proveedor.nit ?? '').toLowerCase().includes(term)
+          || String(proveedor.razon_social ?? '').toLowerCase().includes(term)
+          || String(proveedor.email ?? '').toLowerCase().includes(term)
+          || String(proveedor.telefono ?? '').toLowerCase().includes(term)
+          || String(city?.nombre ?? '').toLowerCase().includes(term)
+          || String(dept?.nombre ?? '').toLowerCase().includes(term)
+        );
+      });
+    }
 
     const cityId = this.cityFilter();
     if (cityId) {
@@ -375,8 +398,8 @@ export class ProveedoresComponent {
     if (deptId) {
       const cityIds = this.ciudades()
         .filter((c) => Number(c.id_dpto) === Number(deptId))
-        .map((c) => c.id_ciudad);
-      items = items.filter((p) => cityIds.includes(p.id_ciudad));
+        .map((c) => Number(c.id_ciudad));
+      items = items.filter((p) => cityIds.includes(Number(p.id_ciudad)));
     }
 
     const field = this.sortField();
@@ -395,7 +418,7 @@ export class ProveedoresComponent {
     razon_social: ['', Validators.required],
     direccion: [''],
     email: ['', Validators.email],
-    telefono: [''],
+    telefono: ['', Validators.pattern(/^\+?[0-9\s()\-]{7,20}$/)],
     id_ciudad: [0, [Validators.required, Validators.min(1)]],
   });
 
@@ -411,7 +434,7 @@ export class ProveedoresComponent {
       departamentos: this.departamentoService.list(),
     }).subscribe({
       next: ({ proveedores, ciudades, departamentos }) => {
-        this.proveedores.set(proveedores);
+        this.proveedores.set(this.sortByNewestRegistro(proveedores));
         this.ciudades.set(ciudades);
         this.departamentos.set(departamentos);
         this.loading.set(false);
@@ -594,5 +617,16 @@ export class ProveedoresComponent {
           },
         });
       });
+  }
+
+  private sortByNewestRegistro(items: Proveedor[]): Proveedor[] {
+    return [...items].sort((a, b) => {
+      const aDate = a.fecha_registro ? new Date(a.fecha_registro).getTime() : 0;
+      const bDate = b.fecha_registro ? new Date(b.fecha_registro).getTime() : 0;
+      if (aDate !== bDate) {
+        return bDate - aDate;
+      }
+      return Number(b.id_proveedor) - Number(a.id_proveedor);
+    });
   }
 }
