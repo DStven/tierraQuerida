@@ -31,12 +31,14 @@ export const routes: Routes = [
       },
       {
         path: 'categorias',
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador'] },
         loadComponent: () => import('./features/categorias/categorias.component').then((m) => m.CategoriasComponent),
       },
       {
         path: 'productos',
         canActivate: [roleGuard],
-        data: { roles: ['Administrador'] },
+        data: { roles: ['Administrador', 'Empleado'] },
         loadComponent: () => import('./features/productos/productos.component').then((m) => m.ProductosComponent),
       },
       {

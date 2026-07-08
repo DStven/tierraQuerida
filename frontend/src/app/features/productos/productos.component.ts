@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { Categoria, Producto } from '../../core/models/database.model';
+import { AuthService } from '../../core/services/auth.service';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { ProductoService } from '../../core/services/producto.service';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
@@ -90,7 +91,9 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                     <td class="px-4 py-3">
                       <div class="flex flex-wrap gap-2">
                         <button type="button" (click)="openEdit(producto)" class="btn-ghost">Editar</button>
-                        <button type="button" (click)="remove(producto)" class="btn-danger">Eliminar</button>
+                        @if (auth.isAdmin()) {
+                          <button type="button" (click)="remove(producto)" class="btn-danger">Eliminar</button>
+                        }
                       </div>
                     </td>
                   </tr>
@@ -171,6 +174,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
   `,
 })
 export class ProductosComponent {
+  readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly productoService = inject(ProductoService);
   private readonly categoriaService = inject(CategoriaService);

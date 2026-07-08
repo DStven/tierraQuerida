@@ -42,7 +42,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
         [totalCount]="inventario().length"
         [filteredCount]="filtered().length"
       >
-        @if (auth.isAdmin()) {
+        @if (canManage()) {
           <button actions type="button" (click)="openCreate()" class="btn-primary">Nuevo registro de inventario</button>
         }
       </app-page-header>
@@ -94,7 +94,7 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                   <th class="px-4 py-3 font-medium">Cantidad</th>
                   <th class="px-4 py-3 font-medium">Stock mínimo</th>
                   <th class="px-4 py-3 font-medium">Estado</th>
-                  @if (auth.isAdmin()) { <th class="px-4 py-3 font-medium">Acciones</th> }
+                  @if (canManage()) { <th class="px-4 py-3 font-medium">Acciones</th> }
                 </tr>
               </thead>
               <tbody>
@@ -113,11 +113,13 @@ import { NumericInputDirective } from '../../shared/directives/numeric-input.dir
                         @if (isLowStock(item)) { <span class="badge badge-warning">Stock bajo</span> }
                       </div>
                     </td>
-                    @if (auth.isAdmin()) {
+                    @if (canManage()) {
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
                           <button type="button" (click)="openEdit(item)" class="btn-ghost">Editar</button>
-                          <button type="button" (click)="remove(item)" class="btn-danger">Eliminar</button>
+                          @if (auth.isAdmin()) {
+                            <button type="button" (click)="remove(item)" class="btn-danger">Eliminar</button>
+                          }
                         </div>
                       </td>
                     }
@@ -261,6 +263,7 @@ export class InventarioComponent {
   readonly editingId = signal<number | null>(null);
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);
+  readonly canManage = computed(() => this.auth.isAdmin() || this.auth.isEmpleado());
 
   readonly filtered = computed(() => {
     let items = filterBySearch(this.inventario(), this.search(), ['producto']);

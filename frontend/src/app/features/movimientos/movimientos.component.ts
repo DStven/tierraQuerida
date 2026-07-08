@@ -3,11 +3,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Categoria, Inventario, MovimientoStock, Proveedor, TipoMovimiento } from '../../core/models/database.model';
+import { Categoria, Inventario, MovimientoStock, Producto, Proveedor, TipoMovimiento } from '../../core/models/database.model';
 import { AuthService } from '../../core/services/auth.service';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { InventarioService } from '../../core/services/inventario.service';
 import { MovimientoPayload, MovimientoService } from '../../core/services/movimiento.service';
+import { ProductoService } from '../../core/services/producto.service';
 import { ProveedorService } from '../../core/services/proveedor.service';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { PageHeaderComponent } from '../../shared/components/page-header.component';
@@ -77,12 +78,18 @@ import { buildPagination, paginate } from '../../shared/utils/pagination.util';
             </label>
             <label class="form-label">
               Producto<span class="required-mark">*</span>
-              <select formControlName="id_inventario" class="form-input mt-1.5" [class.is-invalid]="invalid('id_inventario')">
+              <select
+                formControlName="id_inventario"
+                class="form-input mt-1.5"
+                [class.is-invalid]="invalid('id_inventario')"
+                [disabled]="!form.getRawValue().id_categoria || productsLoading()"
+              >
                 <option [ngValue]="0">Seleccione...</option>
                 @for (item of filteredInventario(); track item.id_inventario) {
                   <option [ngValue]="item.id_inventario">{{ item.producto }} ({{ item.cantidad }})</option>
                 }
               </select>
+              @if (productsLoading()) { <span class="mt-1 inline-block text-xs text-zinc-500">Cargando productos...</span> }
               @if (invalid('id_inventario')) { <span class="form-error">Seleccione un producto</span> }
               @if (showNoProductsMessage()) { <span class="form-error">No existen productos para la categoría seleccionada</span> }
             </label>
@@ -208,6 +215,7 @@ export class MovimientosComponent {
   private readonly movimientoService = inject(MovimientoService);
   private readonly inventarioService = inject(InventarioService);
   private readonly categoriaService = inject(CategoriaService);
+  private readonly productoService = inject(ProductoService);
   private readonly proveedorService = inject(ProveedorService);
   private readonly toast = inject(ToastService);
 
@@ -219,6 +227,8 @@ export class MovimientosComponent {
   readonly breadcrumbs = [{ label: 'Inicio', path: '/dashboard' }, { label: 'Movimientos' }];
   readonly inventario = signal<Inventario[]>([]);
   readonly categorias = signal<Categoria[]>([]);
+  readonly productos = signal<Producto[]>([]);
+  readonly productsLoading = signal(false);
   readonly proveedores = signal<Proveedor[]>([]);
   readonly movimientos = signal<MovimientoStock[]>([]);
   readonly loading = signal(true);
@@ -243,11 +253,20 @@ export class MovimientosComponent {
     if (!categoriaId) {
       return [];
     }
-    return this.inventario().filter((item) => Number(item.id_categoria) === categoriaId);
+
+    const inventarioCategoria = this.inventario().filter((item) => Number(item.id_categoria) === categoriaId);
+    const productosCategoria = this.productos();
+
+    if (!productosCategoria.length) {
+      return inventarioCategoria;
+    }
+
+    const productNames = new Set(productosCategoria.map((producto) => String(producto.nombre).trim().toLowerCase()));
+    return inventarioCategoria.filter((item) => productNames.has(String(item.producto).trim().toLowerCase()));
   });
 
   readonly showNoProductsMessage = computed(() =>
-    Number(this.form.controls.id_categoria.value) > 0 && this.filteredInventario().length === 0,
+    Number(this.form.controls.id_categoria.value) > 0 && !this.productsLoading() && this.filteredInventario().length === 0,
   );
 
   readonly filtered = computed(() => {
@@ -285,9 +304,9 @@ export class MovimientosComponent {
 
   constructor() {
     forkJoin({
-      inventario: this.inventarioService.list(),
-      categorias: this.categoriaService.list(),
-      proveedores: this.proveedorService.list(),
+      inventario: this.inventarioService.list().pipe(catchError(() => of([] as Inventario[]))),
+      categorias: this.categoriaService.list().pipe(catchError(() => of([] as Categoria[]))),
+      proveedores: this.proveedorService.list().pipe(catchError(() => of([] as Proveedor[]))),
       movimientos: this.auth.isAdmin()
         ? this.movimientoService.list().pipe(catchError(() => of([] as MovimientoStock[])))
         : of([] as MovimientoStock[]),
@@ -298,6 +317,13 @@ export class MovimientosComponent {
         this.proveedores.set(proveedores);
         this.movimientos.set(this.uniqueMovimientos(movimientos));
         this.loading.set(false);
+
+        if (!categorias.length) {
+          this.toast.warning('No fue posible cargar categorías');
+        }
+        if (!inventario.length) {
+          this.toast.warning('No fue posible cargar productos de inventario');
+        }
       },
       error: () => {
         this.loading.set(false);
@@ -324,7 +350,9 @@ export class MovimientosComponent {
   }
 
   onCategoriaChange(): void {
+    const categoriaId = Number(this.form.controls.id_categoria.value);
     this.form.patchValue({ id_inventario: 0 });
+    this.loadProducts(categoriaId);
   }
 
   onCantidadFocus(): void {
@@ -358,10 +386,38 @@ export class MovimientosComponent {
 
     const raw = this.form.getRawValue();
     const userId = this.auth.currentUser()?.id_usuario;
+    const cantidad = Number(raw.cantidad);
+    const selectedInventario = this.inventario().find(
+      (item) => Number(item.id_inventario) === Number(raw.id_inventario),
+    );
+
+    if (!selectedInventario) {
+      const msg = 'Seleccione un producto de inventario válido';
+      this.formError.set(msg);
+      this.toast.error(msg);
+      return;
+    }
+
+    if (!Number.isFinite(cantidad) || cantidad <= 0) {
+      const msg = 'La cantidad debe ser mayor a cero';
+      this.formError.set(msg);
+      this.toast.error(msg);
+      return;
+    }
+
+    if (raw.tipo_movimiento === 'Salida') {
+      const stockDisponible = Number(selectedInventario.cantidad);
+      if (cantidad > stockDisponible) {
+        const msg = `Stock insuficiente. Disponible: ${stockDisponible}`;
+        this.formError.set(msg);
+        this.toast.error(msg);
+        return;
+      }
+    }
 
     const payload: MovimientoPayload = {
       tipo_movimiento: raw.tipo_movimiento,
-      cantidad: Number(raw.cantidad),
+      cantidad,
       fecha_movimiento: this.toSqlDateTime(raw.fecha_movimiento),
       observacion: raw.observacion || null,
       id_inventario: Number(raw.id_inventario),
@@ -392,16 +448,21 @@ export class MovimientosComponent {
   }
 
   private reloadInventarioAndHistory(): void {
-    this.inventarioService.list().subscribe((inventario) => {
-      this.inventario.set(inventario);
-      const selectedCategoria = Number(this.form.controls.id_categoria.value);
-      const selectedProducto = Number(this.form.controls.id_inventario.value);
-      const hasSelectedProduct = inventario.some(
-        (item) => Number(item.id_categoria) === selectedCategoria && Number(item.id_inventario) === selectedProducto,
-      );
-      if (!hasSelectedProduct) {
-        this.form.patchValue({ id_inventario: 0 });
-      }
+    this.inventarioService.list().subscribe({
+      next: (inventario) => {
+        this.inventario.set(inventario);
+        const selectedCategoria = Number(this.form.controls.id_categoria.value);
+        const selectedProducto = Number(this.form.controls.id_inventario.value);
+        const hasSelectedProduct = inventario.some(
+          (item) => Number(item.id_categoria) === selectedCategoria && Number(item.id_inventario) === selectedProducto,
+        );
+        if (!hasSelectedProduct) {
+          this.form.patchValue({ id_inventario: 0 });
+        }
+      },
+      error: () => {
+        this.toast.error('No fue posible actualizar el inventario');
+      },
     });
 
     if (this.auth.isAdmin()) {
@@ -410,6 +471,27 @@ export class MovimientosComponent {
         error: () => this.movimientos.set([]),
       });
     }
+  }
+
+  private loadProducts(categoryId: number): void {
+    if (!categoryId) {
+      this.productos.set([]);
+      return;
+    }
+
+    this.productsLoading.set(true);
+    this.productoService.list({ id_categoria: categoryId }).subscribe({
+      next: (productos) => {
+        this.productos.set(productos);
+      },
+      error: () => {
+        this.productos.set([]);
+        this.toast.error('No fue posible cargar los productos de la categoría seleccionada');
+      },
+      complete: () => {
+        this.productsLoading.set(false);
+      },
+    });
   }
 
   private uniqueMovimientos(items: MovimientoStock[]): MovimientoStock[] {
