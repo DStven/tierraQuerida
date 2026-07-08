@@ -6,11 +6,15 @@
 3. Presione "Entrar al panel".
 4. Si las credenciales son validas, sera redirigido al Dashboard.
 
+![Login](../screenshots/login.png)
+
 ## 2. Dashboard
 - Muestra indicadores generales de inventario y actividad.
 - Incluye tarjetas, graficas y accesos rapidos.
 - Permite refrescar datos desde el boton de actualizacion.
 - Usuarios Administrador visualizan mas informacion de control y auditoria.
+
+![Dashboard](../screenshots/dashboard.png)
 
 ## 3. Usuarios (Solo Administrador)
 - Ruta: `/usuarios`
@@ -21,6 +25,8 @@
   - Buscar y paginar resultados
 - Campos clave: identificacion, nombre, email, clave, estado y rol.
 
+![Usuarios](../screenshots/usuarios.png)
+
 ## 4. Productos (Solo Administrador)
 - Ruta: `/productos`
 - Permite:
@@ -30,10 +36,14 @@
   - Buscar por nombre/descripcion/precio/categoria
 - Cada producto se relaciona con una categoria.
 
+![Productos](../screenshots/productos.png)
+
 ## 5. Categorias
 - Ruta: `/categorias`
 - Permite crear, editar y eliminar categorias.
 - Se usan para clasificar productos e inventario.
+
+![Categorias](../screenshots/categorias.png)
 
 ## 6. Inventario
 - Ruta: `/inventario`
@@ -42,11 +52,15 @@
 - Administrador puede crear/editar/eliminar registros de inventario.
 - Muestra alertas de stock bajo.
 
+![Inventario](../screenshots/inventario.png)
+
 ## 7. Movimientos
 - Ruta: `/movimientos`
 - Permite registrar entradas y salidas de stock.
 - Campos principales: tipo, categoria, producto, cantidad, fecha, observacion y proveedor opcional.
 - Historial completo disponible para Administrador.
+
+![Movimientos](../screenshots/movimientos.png)
 
 ## 8. Auditoria (Solo Administrador)
 - Ruta: `/auditoria`
@@ -54,10 +68,14 @@
 - Incluye filtros de busqueda y paginacion.
 - Facilita trazabilidad operativa.
 
+![Auditoria](../screenshots/auditoria.png)
+
 ## 9. Proveedores
 - Ruta: `/proveedores`
 - Permite consultar, crear, editar, eliminar y ver detalle de proveedores (segun rol).
 - Incluye filtrado por ciudad/departamento y busqueda por razon social, NIT y contacto.
+
+![Proveedores](../screenshots/proveedores.png)
 
 ## 10. Cierre de sesion
 - Disponible desde el menu de usuario en la parte superior.

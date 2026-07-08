@@ -3,6 +3,8 @@
 ## 1. Vision General
 Tierra Querida es una aplicacion web full stack compuesta por un backend REST en Node.js/Express y un frontend SPA en Angular.
 
+![Arquitectura del sistema](../screenshots/arquitectura.png)
+
 ## 2. Backend
 ### 2.1 Stack
 - Node.js
@@ -59,6 +61,12 @@ Tierra Querida es una aplicacion web full stack compuesta por un backend REST en
 - Dashboard
 - Modulos funcionales (usuarios, proveedores, categorias, productos, inventario, movimientos, auditoria)
 - Componentes compartidos (paginacion, modal de confirmacion, toasts, estados vacios, etc.)
+
+![Dashboard](../screenshots/dashboard.png)
+
+![Inventario](../screenshots/inventario.png)
+
+![Movimientos](../screenshots/movimientos.png)
 
 ## 4. Base de Datos
 ### 4.1 Motor

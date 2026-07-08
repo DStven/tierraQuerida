@@ -140,6 +140,58 @@ BCRYPT_SALT_ROUNDS=10
 <!-- Movimientos -->
 <!-- Auditoría -->
 
+## Login
+
+![Login](screenshots/login.png)
+
+-----------------------------------------------------
+
+## Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+-----------------------------------------------------
+
+## Usuarios
+
+![Usuarios](screenshots/usuarios.png)
+
+-----------------------------------------------------
+
+## Proveedores
+
+![Proveedores](screenshots/proveedores.png)
+
+-----------------------------------------------------
+
+## Categorías
+
+![Categorías](screenshots/categorias.png)
+
+-----------------------------------------------------
+
+## Productos
+
+![Productos](screenshots/productos.png)
+
+-----------------------------------------------------
+
+## Inventario
+
+![Inventario](screenshots/inventario.png)
+
+-----------------------------------------------------
+
+## Movimientos
+
+![Movimientos](screenshots/movimientos.png)
+
+-----------------------------------------------------
+
+## Auditoría
+
+![Auditoría](screenshots/auditoria.png)
+
 ------------------------------------------------
 
 ## Base de datos
