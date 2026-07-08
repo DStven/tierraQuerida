@@ -1,4 +1,4 @@
-# Base de datos `tierraquerida_db`
+# Base de datos `tierraQuerida_db`
 
 Documento de referencia construido a partir del dump SQL real de la base de datos. Resume la estructura, relaciones, índices y datos semilla para que el esquema se vea completo en GitHub.
 

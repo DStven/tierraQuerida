@@ -1,5 +1,5 @@
-CREATE DATABASE tierraquerida_db;
-USE tierraquerida_db;
+CREATE DATABASE tierraQuerida_db;
+USE tierraQuerida_db;
 
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';
