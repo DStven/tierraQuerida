@@ -173,7 +173,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Dashboard', path: '/dashboard', icon: APP_ICONS.dashboard },
     { label: 'Usuarios', path: '/usuarios', icon: APP_ICONS.usuarios, roles: ['Administrador'] },
     { label: 'Proveedores', path: '/proveedores', icon: APP_ICONS.proveedores },
-    { label: 'Categorías', path: '/categorias', icon: APP_ICONS.categorias, roles: ['Administrador'] },
+    { label: 'Categorías', path: '/categorias', icon: APP_ICONS.categorias, roles: ['Administrador', 'Empleado'] },
     { label: 'Productos', path: '/productos', icon: APP_ICONS.productos, roles: ['Administrador', 'Empleado'] },
     { label: 'Inventario', path: '/inventario', icon: APP_ICONS.inventario },
     { label: 'Movimientos', path: '/movimientos', icon: APP_ICONS.movimientos },

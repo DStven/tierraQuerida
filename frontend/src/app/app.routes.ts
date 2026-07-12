@@ -32,7 +32,7 @@ export const routes: Routes = [
       {
         path: 'categorias',
         canActivate: [roleGuard],
-        data: { roles: ['Administrador'] },
+        data: { roles: ['Administrador', 'Empleado'] },
         loadComponent: () => import('./features/categorias/categorias.component').then((m) => m.CategoriasComponent),
       },
       {
