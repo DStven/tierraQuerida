@@ -204,6 +204,7 @@ BCRYPT_SALT_ROUNDS=10
 ## Autor
 
 David Steven Mosquera Hillón
+
 Carlos Leandro Zapata Jimenez
 
 Proyecto desarrollado para el SENA.
