@@ -91,7 +91,7 @@ npm install
 
 ```bash
 cd frontend
-npm start
+ng serve
 ```
 
 ### Variables de entorno
