@@ -58,6 +58,13 @@ app.use((_req, res) => {
 // Maneja errores generales del servidor.
 app.use((err, _req, res, _next) => {
   console.error(err);
+
+  // MySQL usa este código cuando se intenta borrar un registro referenciado.
+  // Nunca debe presentarse al cliente como un fallo interno del servidor.
+  if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+    return error(res, 409, 'No se puede eliminar el registro porque tiene información relacionada.');
+  }
+
   error(
     res,
     err.status || 500,
